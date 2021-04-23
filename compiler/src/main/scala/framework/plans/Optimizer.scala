@@ -6,7 +6,8 @@ import scala.collection.mutable.ArrayBuffer
 
 /** Optimizer used for plans from BatchUnnester **/
 class Optimizer(schema: Schema = Schema()) extends Extensions {
-
+  // test3
+  // test4
   val extensions = new Extensions{}
   import extensions._
 
