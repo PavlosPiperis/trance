@@ -331,7 +331,7 @@ object ExampleQueryMultiTcga extends DriverGene {
                         for t in o.transcript_consequences union
                           if (g.g_gene_id = t.gene_id) then
                               {(sid := o.donorId,
-                                lbl := lbl := if (s.tumor_tissue_site = "Breast") then 1
+                                lbl := if (s.tumor_tissue_site = "Breast") then 1
                                          `  else if (s.tumor_tissue_site = "Lung") then 2
                                             else if (s.tumor_tissue_site = "Kidney") then 3
                                             else if (s.tumor_tissue_site = "Stomach") then 4
