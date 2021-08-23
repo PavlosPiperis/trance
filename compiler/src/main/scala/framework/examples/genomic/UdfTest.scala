@@ -70,54 +70,32 @@ object ExampleQueryMultiOmicsProstate extends DriverGene {
 //                                                else 0.01)}).sumBy({sid}, {burden}))}
 //     """
   val query = {
-    // notes from discussion
-    // s"""
-    //     // defined some udfs
-    //     def pivot(df): ... // todo
-    //     def sepDF(df): (X,y) // todo
-    //     def chi_square(X,y): ... // todo
-
-
-    //     GMB <=
-    //       for g in genemap union
-    //         {(gene:= g.g_gene_name, burdens :=
-    //           (for o in occurrences union
-    //             for t in o.transcript_consequences union
-    //               if (g.g_gene_id = t.gene_id) then
-    //                  {(sid := o.donorId, burden := if (t.impact = "HIGH") then 0.80
-    //                                             else if (t.impact = "MODERATE") then 0.50
-    //                                             else if (t.impact = "LOW") then 0.30
-    //                                             else 0.01)}).sumBy({sid}, {burden}))}
-    //     matrix <= pivot(GMB)
-    //     (X,y) <= sepDF(matrix)
-    //     selected_genes <= chi_square(X,y) // user could specify a gene set
-    //     matrix <= matrix[selected_genes] // subset
-    // """
 
 //// Using Occurences only (tcga loader)
-//      s"""   GMB <=
-//           for g in genemap union
-//             {(gene:= g.g_gene_name, burdens :=
-//               (for o in occurrences union
-//                 for s in clinical union
-//                  if (o.donorId = s.sample) then
-//                    for t in o.transcript_consequences union
-//                      if (g.g_gene_id = t.gene_id) then
-//                          {(sid := o.donorId,
-//                          lbl := if (s.tumor_tissue_site = "Breast") then 1
-//                                 else if (s.tumor_tissue_site = "Lung") then 2
-//                                 else if (s.tumor_tissue_site = "Kidney") then 3
-//                                 else if (s.tumor_tissue_site = "Stomach") then 4
-//                                 else if (s.tumor_tissue_site = "Ovary") then 5
-//                                 else if (s.tumor_tissue_site = "Endometrial") then 6
-//                                 else if (s.tumor_tissue_site = "Head and Neck") then 7
-//                                 else if (s.tumor_tissue_site = "Central nervous system") then 8
-//                                 else 0,
-//                          burden := if (t.impact = "HIGH") then 0.80
-//                                                 else if (t.impact = "MODERATE") then 0.50
-//                                                 else if (t.impact = "LOW") then 0.30
-//                                                 else 0.01)}).sumBy({sid, lbl}, {burden}))}
-//       """
+      s"""   GMB <=
+           for g in genemap union
+             {(gene:= g.g_gene_name, burdens :=
+               (for o in occurrences union
+                 for s in clinical union
+                  if (o.donorId = s.sample) then
+                    for t in o.transcript_consequences union
+                      if (g.g_gene_id = t.gene_id) then
+                          {(sid := o.donorId,
+                          lbl := if (s.tumor_tissue_site = "Breast") then 1
+                                 else if (s.tumor_tissue_site = "Lung") then 2
+                                 else if (s.tumor_tissue_site = "Kidney") then 3
+                                 else if (s.tumor_tissue_site = "Stomach") then 4
+                                 else if (s.tumor_tissue_site = "Ovary") then 5
+                                 else if (s.tumor_tissue_site = "Endometrial") then 6
+                                 else if (s.tumor_tissue_site = "Head and Neck") then 7
+                                 else if (s.tumor_tissue_site = "Central nervous system") then 8
+                                 else if (s.tumor_tissue_site = "Colon") then 0,
+                                 else -1,
+                          burden := if (t.impact = "HIGH") then 0.80
+                                                 else if (t.impact = "MODERATE") then 0.50
+                                                 else if (t.impact = "LOW") then 0.30
+                                                 else 0.01)}).sumBy({sid, lbl}, {burden}))}
+       """
 
 // Using Occurences only (clinical biospec)
 //    s"""
@@ -172,46 +150,46 @@ object ExampleQueryMultiOmicsProstate extends DriverGene {
 
 // Integrating occurences and gene expression
 //
-    s"""
-        mapExpression <=
-          for s in samples union
-            for e in expression union
-              if (s.bcr_aliquot_uuid = e.ge_aliquot) then
-                {(sid := s.bcr_patient_uuid, gene := e.ge_gene_id, fpkm := e.ge_fpkm)};
-
-         impactGMB <=
-          for g in genemap union
-            {(gene_name := g.g_gene_name, gene_id:= g.g_gene_id, burdens :=
-              (for o in occurrences union
-                for s in clinical union
-                  if (o.donorId = s.bcr_patient_uuid) then
-                    for t in o.transcript_consequences union
-                      if (g.g_gene_id = t.gene_id) then
-                         {(sid := o.donorId,
-                           lbl := if (s.gleason_pattern_primary = 2) then 0
-                            else if (s.gleason_pattern_primary = 3) then 0
-                            else if (s.gleason_pattern_primary = 4) then 1
-                            else if (s.gleason_pattern_primary = 5) then 1
-                            else -1,
-                           burden := if (t.impact = "HIGH") then 0.80
-                                                    else if (t.impact = "MODERATE") then 0.50
-                                                    else if (t.impact = "LOW") then 0.30
-                                                    else 0.01
-                          )}
-              ).sumBy({sid, lbl}, {burden})
-            )};
-
-        GMB <=
-          for g in impactGMB union
-            {(gene_name := g.gene_name, gene_id := g.gene_id, burdens :=
-              (for b in g.burdens union
-                for e in mapExpression union
-                  if (b.sid = e.sid && g.gene_id = e.gene) then
-                    {(sid := b.sid, lbl := b.lbl, burden := b.burden*e.fpkm)}).sumBy({sid,lbl}, {burden})
-                     )}
-    """
-
 //    s"""
+//        mapExpression <=
+//          for s in samples union
+//            for e in expression union
+//              if (s.bcr_aliquot_uuid = e.ge_aliquot) then
+//                {(sid := s.bcr_patient_uuid, gene := e.ge_gene_id, fpkm := e.ge_fpkm)};
+//
+//         impactGMB <=
+//          for g in genemap union
+//            {(gene_name := g.g_gene_name, gene_id:= g.g_gene_id, burdens :=
+//              (for o in occurrences union
+//                for s in clinical union
+//                  if (o.donorId = s.bcr_patient_uuid) then
+//                    for t in o.transcript_consequences union
+//                      if (g.g_gene_id = t.gene_id) then
+//                         {(sid := o.donorId,
+//                           lbl := if (s.gleason_pattern_primary = 2) then 0
+//                            else if (s.gleason_pattern_primary = 3) then 0
+//                            else if (s.gleason_pattern_primary = 4) then 1
+//                            else if (s.gleason_pattern_primary = 5) then 1
+//                            else -1,
+//                           burden := if (t.impact = "HIGH") then 0.80
+//                                                    else if (t.impact = "MODERATE") then 0.50
+//                                                    else if (t.impact = "LOW") then 0.30
+//                                                    else 0.01
+//                          )}
+//              ).sumBy({sid, lbl}, {burden})
+//            )};
+//
+//        GMB <=
+//          for g in impactGMB union
+//            {(gene_name := g.gene_name, gene_id := g.gene_id, burdens :=
+//              (for b in g.burdens union
+//                for e in mapExpression union
+//                  if (b.sid = e.sid && g.gene_id = e.gene) then
+//                    {(sid := b.sid, lbl := b.lbl, burden := b.burden*e.fpkm)}).sumBy({sid,lbl}, {burden})
+//                     )}
+//    """
+//
+////    s"""
 //
 //         GMB <=
 //          for g in genemap union
@@ -353,8 +331,17 @@ object ExampleQueryMultiTcga extends DriverGene {
                         for t in o.transcript_consequences union
                           if (g.g_gene_id = t.gene_id) then
                               {(sid := o.donorId,
-                              lbl := s.tumor_tissue_site,
-                              burden := if (t.impact = "HIGH") then 0.80
+                                lbl := lbl := if (s.tumor_tissue_site = "Breast") then 1
+                                         `  else if (s.tumor_tissue_site = "Lung") then 2
+                                            else if (s.tumor_tissue_site = "Kidney") then 3
+                                            else if (s.tumor_tissue_site = "Stomach") then 4
+                                            else if (s.tumor_tissue_site = "Ovary") then 5
+                                            else if (s.tumor_tissue_site = "Endometrial") then 6
+                                            else if (s.tumor_tissue_site = "Head and Neck") then 7
+                                            else if (s.tumor_tissue_site = "Central nervous system") then 8
+                                            else if (s.tumor_tissue_site = "Colon") then 0
+                                            else 9,
+                                burden := if (t.impact = "HIGH") then 0.80
                                                      else if (t.impact = "MODERATE") then 0.50
                                                      else if (t.impact = "LOW") then 0.30
                                                      else 0.01)}).sumBy({sid, lbl}, {burden}))}
