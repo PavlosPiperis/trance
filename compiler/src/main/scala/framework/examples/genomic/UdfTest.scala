@@ -376,7 +376,8 @@ object FinalMultiTcga9 extends DriverGene {
 
     // Using Occurences only (tcga loader)
 
-          s"""   GMB <=
+          s"""
+             GMB <=
                for g in genemap union
                  {(gene:= g.g_gene_name, burdens :=
                    (for o in occurrences union
