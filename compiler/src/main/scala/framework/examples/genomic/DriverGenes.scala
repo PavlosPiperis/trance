@@ -149,7 +149,7 @@ trait Occurrence extends Vep {
             |val IBag_occurrences__D = ${odict(1)}
     				|IBag_occurrences__D.cache
     				|IBag_occurrences__D.count
-            |val odict2 = spark.read.json(s"$fname/${dictNames._2}/").drop("flags").as[OccurTransDict2Mid]
+            |val odict2 = spark.read.json(s"$fname/${dictNames._2}/").drop("flags").as[OccurTransDict2]
             |val IMap_occurrences__D_transcript_consequences = ${odict(2)}
     				|IMap_occurrences__D_transcript_consequences.cache
     				|IMap_occurrences__D_transcript_consequences.count
