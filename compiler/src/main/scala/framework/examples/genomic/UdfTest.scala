@@ -27,7 +27,7 @@ object MultiOmicsProstate extends DriverGene {
         |""".stripMargin
 
   // name to identify your query
-  val name = "MultiOmicsProstate"
+  val name = "MultiOmicsProstateFinal"
 
   // a map of input types for the parser
     val tbls = Map("occurrences" -> occurmids.tp,
