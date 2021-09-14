@@ -85,7 +85,7 @@ object MultiOmicsProstateFinal extends DriverGene {
 }
 
 // this is the Gene Mutation Burden Example
-object ProstateImpactQuery extends DriverGene {
+object ProstateImpactQueryMulti extends DriverGene {
 
   val sampleFile = "/mnt/app_hdd/data/biospecimen/aliquot/nationwidechildrens.org_biospecimen_aliquot_prad.txt"
   val cnvFile = "/mnt/app_hdd/data/cnv"
@@ -116,7 +116,7 @@ object ProstateImpactQuery extends DriverGene {
         |${loadGtfTable(shred, skew, fname = gtfFile)}
         |""".stripMargin
   // name to identify your query
-  val name = "ProstateImpactQuery"
+  val name = "ProstateImpactQueryMulti"
   // moved these to DriverGenes.scala Pathway train (line 19)
   // val genetype = TupleType("name" -> StringType)
   // val pathtype = TupleType("p_name" -> StringType, "url" -> StringType, "gene_set" -> BagType(genetype))
@@ -179,69 +179,69 @@ object ProstateImpactQuery extends DriverGene {
 
 
   // Using only Gene Expression (fpkm)
-  s"""
-        GMB <=
-          for g in genemap union
-            {(gene:= g.g_gene_name, fpkm :=
-              (for e in expression union
-                for c in clinical union
-                  for s in samples union
-                   if (s.bcr_patient_uuid = c.bcr_patient_uuid) then
-                    if (e.ge_aliquot = s.bcr_aliquot_uuid) then
-                      if (g.g_gene_id = e.ge_gene_id) then
-                         {(sid := e.ge_aliquot,
-                           lbl := if (c.gleason_pattern_primary = 2) then 0
-                            else if (c.gleason_pattern_primary = 3) then 0
-                            else if (c.gleason_pattern_primary = 4) then 1
-                            else if (c.gleason_pattern_primary = 5) then 1
-                            else -1,
-                           fpkm := e.ge_fpkm
-                          )}
-              ).sumBy({sid, lbl}, {fpkm})
-            )}
-    """
+//  s"""
+//        GMB <=
+//          for g in genemap union
+//            {(gene:= g.g_gene_name, fpkm :=
+//              (for e in expression union
+//                for c in clinical union
+//                  for s in samples union
+//                   if (s.bcr_patient_uuid = c.bcr_patient_uuid) then
+//                    if (e.ge_aliquot = s.bcr_aliquot_uuid) then
+//                      if (g.g_gene_id = e.ge_gene_id) then
+//                         {(sid := e.ge_aliquot,
+//                           lbl := if (c.gleason_pattern_primary = 2) then 0
+//                            else if (c.gleason_pattern_primary = 3) then 0
+//                            else if (c.gleason_pattern_primary = 4) then 1
+//                            else if (c.gleason_pattern_primary = 5) then 1
+//                            else -1,
+//                           fpkm := e.ge_fpkm
+//                          )}
+//              ).sumBy({sid, lbl}, {fpkm})
+//            )}
+//    """
 
 
 // Integrating occurences and gene expression
 //
-//    s"""
-//        mapExpression <=
-//          for s in samples union
-//            for e in expression union
-//              if (s.bcr_aliquot_uuid = e.ge_aliquot) then
-//                {(sid := s.bcr_patient_uuid, gene := e.ge_gene_id, fpkm := e.ge_fpkm)};
-//
-//         impactGMB <=
-//          for g in genemap union
-//            {(gene_name := g.g_gene_name, gene_id:= g.g_gene_id, burdens :=
-//              (for o in occurrences union
-//                for s in clinical union
-//                  if (o.donorId = s.bcr_patient_uuid) then
-//                    for t in o.transcript_consequences union
-//                      if (g.g_gene_id = t.gene_id) then
-//                         {(sid := o.donorId,
-//                           lbl := if (s.gleason_pattern_primary = 2) then 0
-//                            else if (s.gleason_pattern_primary = 3) then 0
-//                            else if (s.gleason_pattern_primary = 4) then 1
-//                            else if (s.gleason_pattern_primary = 5) then 1
-//                            else -1,
-//                           burden := if (t.impact = "HIGH") then 0.80
-//                                                    else if (t.impact = "MODERATE") then 0.50
-//                                                    else if (t.impact = "LOW") then 0.30
-//                                                    else 0.01
-//                          )}
-//              ).sumBy({sid, lbl}, {burden})
-//            )};
-//
-//        GMB <=
-//          for g in impactGMB union
-//            {(gene_name := g.gene_name, gene_id := g.gene_id, burdens :=
-//              (for b in g.burdens union
-//                for e in mapExpression union
-//                  if (b.sid = e.sid && g.gene_id = e.gene) then
-//                    {(sid := b.sid, lbl := b.lbl, burden := b.burden*e.fpkm)}).sumBy({sid,lbl}, {burden})
-//                     )}
-//    """
+    s"""
+        mapExpression <=
+          for s in samples union
+            for e in expression union
+              if (s.bcr_aliquot_uuid = e.ge_aliquot) then
+                {(sid := s.bcr_patient_uuid, gene := e.ge_gene_id, fpkm := e.ge_fpkm)};
+
+         impactGMB <=
+          for g in genemap union
+            {(gene_name := g.g_gene_name, gene_id:= g.g_gene_id, burdens :=
+              (for o in occurrences union
+                for s in clinical union
+                  if (o.donorId = s.bcr_patient_uuid) then
+                    for t in o.transcript_consequences union
+                      if (g.g_gene_id = t.gene_id) then
+                         {(sid := o.donorId,
+                           lbl := if (s.gleason_pattern_primary = 2) then 0
+                            else if (s.gleason_pattern_primary = 3) then 0
+                            else if (s.gleason_pattern_primary = 4) then 1
+                            else if (s.gleason_pattern_primary = 5) then 1
+                            else -1,
+                           burden := if (t.impact = "HIGH") then 0.80
+                                                    else if (t.impact = "MODERATE") then 0.50
+                                                    else if (t.impact = "LOW") then 0.30
+                                                    else 0.01
+                          )}
+              ).sumBy({sid, lbl}, {burden})
+            )};
+
+        GMB <=
+          for g in impactGMB union
+            {(gene_name := g.gene_name, gene_id := g.gene_id, burdens :=
+              (for b in g.burdens union
+                for e in mapExpression union
+                  if (b.sid = e.sid && g.gene_id = e.gene) then
+                    {(sid := b.sid, lbl := b.lbl, burden := b.burden*e.fpkm)}).sumBy({sid,lbl}, {burden})
+                     )}
+    """
 //
 ////    s"""
 //
