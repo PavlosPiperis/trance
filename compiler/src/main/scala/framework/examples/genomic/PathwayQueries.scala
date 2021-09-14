@@ -4,7 +4,7 @@ import framework.common._
 import framework.nrc.MaterializeNRC
 
 case class Gene(name: String, contig: String, start: Int, end: Int)
-case class Pathway(name: String, description: String, genes: List[Gene])
+//case class Pathway(name: String, description: String, genes: List[Gene])
 case class Consequence(impact: String)
 case class Annotation(contig: String, start: Int, end: Int, most_severe_consequence: String, allele: String, transcript_consequence: List[Consequence])
 
