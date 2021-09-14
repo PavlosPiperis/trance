@@ -152,7 +152,7 @@ object App {
   val schema = TPCHSchema.getSchema()
 
   def main(args: Array[String]){
-    AppWriter.runDatasetShred(MultiOmicsProstateFinal, "bugfix", optLevel = 2, schema = schema, unshred=true)
+    AppWriter.runDatasetShred(MultiOmicsProstateFinalRuntimes, "bugfix", optLevel = 2, schema = schema, unshred=true)
     // runFlatToNested()
     // runNestedToNested()
     // runNestedToFlat()
