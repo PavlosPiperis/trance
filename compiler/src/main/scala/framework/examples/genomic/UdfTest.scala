@@ -5,7 +5,7 @@ import framework.common._
 import framework.examples.Query
 import framework.nrc.Parser
 
-object MultiOmicsProstateFinal extends DriverGene {
+object MultiOmicsProstateFinalRuntimes extends DriverGene {
   val sampleFile = "/mnt/app_hdd/data/biospecimen/aliquot/nationwidechildrens.org_biospecimen_aliquot_prad.txt"
   val cnvFile = "/mnt/app_hdd/data/cnv"
   val exprFile = "/mnt/app_hdd/data/expression/"
@@ -27,7 +27,7 @@ object MultiOmicsProstateFinal extends DriverGene {
         |""".stripMargin
 
   // name to identify your query
-  val name = "MultiOmicsProstateFinal"
+  val name = "MultiOmicsProstateFinalRuntimes"
 
   // a map of input types for the parser
     val tbls = Map("occurrences" -> occurmids.tp,
